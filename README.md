@@ -1,204 +1,116 @@
 # Calculation API - Module 11 Assignment
 
-[![CI/CD Pipeline](https://github.com/yourusername/calculation-api/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/yourusername/calculation-api/actions/workflows/ci-cd.yml)
+The Assignment 11 deliverable is a fully tested FastAPI calculation service with Factory Pattern implementation, packaged for local development, Docker usage, and CI/CD. This README documents how the project is structured, what was implemented, and how to reproduce the results.
 
-A RESTful API for performing and storing calculations using FastAPI, SQLAlchemy, and the Factory Pattern. This project demonstrates modern software development practices including automated testing, CI/CD pipelines, and containerization.
+## Project Highlights
 
-## 🚀 Features
+Built with FastAPI and SQLAlchemy to expose calculation operations through REST endpoints with database persistence.
+Factory Pattern implementation in app/factory.py with extensible operation registry for Add, Subtract, Multiply, and Divide operations.
+Robust Pydantic validation in app/schemas.py with explicit error handling (division by zero, email format, password strength).
+Comprehensive automated test suite covering unit and integration scenarios (100+ tests with pytest).
+SQLAlchemy ORM models with proper relationships between Users and Calculations tables.
+Continuous Integration via GitHub Actions to test with PostgreSQL, build Docker images, and run security scans.
+Containerized delivery: public Docker image available at bhavanavuttunoori/calculation-api.
 
-- **SQLAlchemy ORM**: Database models for Users and Calculations
-- **Pydantic Validation**: Robust input validation and serialization
-- **Factory Pattern**: Extensible calculation operations (Add, Subtract, Multiply, Divide)
-- **RESTful API**: Full CRUD operations for calculations and users
-- **PostgreSQL Database**: Production-ready database with proper relationships
-- **Comprehensive Testing**: Unit and integration tests with pytest
-- **CI/CD Pipeline**: Automated testing and Docker deployment with GitHub Actions
-- **Docker Support**: Containerized application with docker-compose
-- **Security**: Password hashing with bcrypt
+## Getting Started
 
-## 📋 Table of Contents
+### 1. Setup Environment
 
-- [Project Structure](#project-structure)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Running the Application](#running-the-application)
-- [Running Tests](#running-tests)
-- [API Documentation](#api-documentation)
-- [Factory Pattern Implementation](#factory-pattern-implementation)
-- [Database Schema](#database-schema)
-- [CI/CD Pipeline](#cicd-pipeline)
-- [Docker Hub](#docker-hub)
-- [Learning Outcomes](#learning-outcomes)
+```bash
+cd assignment11
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-## 📁 Project Structure
+### 2. Run the Application Locally
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Navigate to http://localhost:8000/docs for the Swagger UI or hit REST endpoints directly (e.g. POST http://localhost:8000/calculations).
+
+## Docker Usage
+
+### Build Locally (optional)
+
+```bash
+docker build -t calculation-api .
+docker run -p 8000:8000 -e DATABASE_URL=sqlite:///./test.db -e SECRET_KEY=test-key calculation-api
+```
+
+### Pull Prebuilt Image
+
+```bash
+docker pull bhavanavuttunoori/calculation-api:latest
+docker run -p 8000:8000 -e DATABASE_URL=sqlite:///./test.db -e SECRET_KEY=test-key bhavanavuttunoori/calculation-api:latest
+```
+
+### Using Docker Compose
+
+```bash
+docker-compose up -d
+```
+
+The application will be available at http://localhost:8000 with PostgreSQL database.
+
+## Testing Strategy
+
+Unit Tests (tests/test_factory.py): verify factory pattern operations and extensibility.
+Unit Tests (tests/test_schemas.py): verify Pydantic validation rules and error handling.
+Integration Tests (tests/test_integration.py): exercise each API route through FastAPI's test client with database operations.
+
+Run the full suite:
+
+```bash
+pytest tests/ -v
+```
+
+Run with coverage:
+
+```bash
+pytest tests/ --cov=app --cov-report=term-missing --cov-report=html
+```
+
+View coverage report:
+
+```bash
+start htmlcov/index.html  # Windows
+```
+
+## Project Structure
 
 ```
-calculation-api/
+assignment11/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py              # FastAPI application
-│   ├── database.py          # Database configuration
-│   ├── models.py            # SQLAlchemy models
-│   ├── schemas.py           # Pydantic schemas
+│   ├── main.py              # FastAPI application with all endpoints
+│   ├── database.py          # Database configuration and session management
+│   ├── models.py            # SQLAlchemy ORM models (User, Calculation)
+│   ├── schemas.py           # Pydantic validation schemas
 │   └── factory.py           # Factory pattern implementation
 ├── tests/
 │   ├── __init__.py
-│   ├── test_factory.py      # Unit tests for factory pattern
+│   ├── test_factory.py      # Unit tests for factory operations
 │   ├── test_schemas.py      # Unit tests for Pydantic schemas
 │   └── test_integration.py  # Integration tests with database
 ├── .github/
 │   └── workflows/
-│       └── ci-cd.yml        # GitHub Actions workflow
+│       └── ci-cd.yml        # GitHub Actions CI/CD pipeline
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
 ├── pytest.ini
 ├── .env.example
-├── .gitignore
 └── README.md
 ```
 
-## 🔧 Requirements
+## API Endpoints
 
-- Python 3.11+
-- PostgreSQL 15+
-- Docker & Docker Compose (optional)
-- Git
+### Calculation Operations
 
-## 📦 Installation
-
-### Local Development
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/calculation-api.git
-cd calculation-api
-```
-
-2. **Create virtual environment**
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Set up environment variables**
-```bash
-cp .env.example .env
-# Edit .env with your database credentials
-```
-
-5. **Set up PostgreSQL database**
-```bash
-# Create database
-createdb calculation_db
-
-# Or using psql
-psql -U postgres
-CREATE DATABASE calculation_db;
-```
-
-### Docker Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/yourusername/calculation-api.git
-cd calculation-api
-```
-
-2. **Run with Docker Compose**
-```bash
-docker-compose up -d
-```
-
-The application will be available at `http://localhost:8000`
-
-## 🚀 Running the Application
-
-### Local Development
-
-```bash
-# Activate virtual environment
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Run the application
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### Using Docker
-
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f app
-
-# Stop services
-docker-compose down
-```
-
-### Access the API
-
-- **API Base URL**: http://localhost:8000
-- **Interactive Docs (Swagger)**: http://localhost:8000/docs
-- **Alternative Docs (ReDoc)**: http://localhost:8000/redoc
-
-## 🧪 Running Tests
-
-### Run All Tests
-
-```bash
-# Using pytest
-pytest tests/ -v
-
-# With coverage report
-pytest tests/ -v --cov=app --cov-report=term-missing --cov-report=html
-```
-
-### Run Specific Test Files
-
-```bash
-# Unit tests for factory pattern
-pytest tests/test_factory.py -v
-
-# Unit tests for schemas
-pytest tests/test_schemas.py -v
-
-# Integration tests
-pytest tests/test_integration.py -v
-```
-
-### Run Tests with Docker
-
-```bash
-# Run tests in Docker container
-docker-compose run --rm app pytest tests/ -v
-```
-
-### View Coverage Report
-
-After running tests with coverage, open `htmlcov/index.html` in your browser:
-```bash
-# On Windows
-start htmlcov/index.html
-
-# On macOS
-open htmlcov/index.html
-
-# On Linux
-xdg-open htmlcov/index.html
-```
-
-## 📚 API Documentation
-
-### Calculation Endpoints
-
-#### Create Calculation
+Create Calculation:
 ```http
 POST /calculations
 Content-Type: application/json
@@ -211,23 +123,17 @@ Content-Type: application/json
 }
 ```
 
-**Supported Operations:**
-- `Add` - Addition
-- `Subtract` - Subtraction
-- `Multiply` - Multiplication
-- `Divide` - Division (validates against zero divisor)
-
-#### List Calculations
+List Calculations:
 ```http
 GET /calculations?skip=0&limit=100&user_id=1
 ```
 
-#### Get Calculation
+Get Calculation:
 ```http
 GET /calculations/{calculation_id}
 ```
 
-#### Update Calculation
+Update Calculation:
 ```http
 PUT /calculations/{calculation_id}
 Content-Type: application/json
@@ -238,14 +144,14 @@ Content-Type: application/json
 }
 ```
 
-#### Delete Calculation
+Delete Calculation:
 ```http
 DELETE /calculations/{calculation_id}
 ```
 
-### User Endpoints
+### User Operations
 
-#### Create User
+Create User:
 ```http
 POST /users
 Content-Type: application/json
@@ -257,28 +163,26 @@ Content-Type: application/json
 }
 ```
 
-#### List Users
+List Users:
 ```http
 GET /users?skip=0&limit=100
 ```
 
-#### Get User
+Get User:
 ```http
 GET /users/{user_id}
 ```
 
-## 🏭 Factory Pattern Implementation
+## Factory Pattern Implementation
 
-The Factory Pattern is implemented to handle different calculation operations dynamically:
+The Factory Pattern in app/factory.py provides extensible calculation operations:
 
-### Key Components
+Abstract Operation class defines the interface for all operations.
+Concrete operation classes (AddOperation, SubtractOperation, MultiplyOperation, DivideOperation) implement specific calculations.
+CalculationFactory uses a registry pattern to create appropriate operation instances.
+Easy to extend by registering new operations without modifying existing code.
 
-1. **Abstract Operation Class**: Defines the interface for all operations
-2. **Concrete Operation Classes**: Implement specific calculations (Add, Subtract, Multiply, Divide)
-3. **Factory Class**: Creates appropriate operation instances based on type
-4. **Registry Pattern**: Allows dynamic registration of new operations
-
-### Example Usage
+Example usage:
 
 ```python
 from app.factory import CalculationFactory, perform_calculation
@@ -289,241 +193,204 @@ result = operation.calculate(10, 5)  # Returns 15
 
 # Using the convenience function
 result = perform_calculation(10, 5, "Multiply")  # Returns 50
-
-# Register custom operation
-class PowerOperation(Operation):
-    def calculate(self, a: float, b: float) -> float:
-        return a ** b
-    def get_operation_name(self) -> str:
-        return "Power"
-
-CalculationFactory.register_operation("Power", PowerOperation)
 ```
 
-### Benefits
+## Database Schema
 
-- **Extensibility**: Easy to add new operations without modifying existing code
-- **Separation of Concerns**: Business logic separated from data access
-- **Testability**: Each operation can be tested independently
-- **Type Safety**: Ensures valid operation types at runtime
+Users Table:
+- id (Integer, Primary Key)
+- username (String, Unique, Indexed)
+- email (String, Unique, Indexed)
+- hashed_password (String)
+- created_at (DateTime)
 
-## 🗄️ Database Schema
+Calculations Table:
+- id (Integer, Primary Key)
+- a (Float)
+- b (Float)
+- type (String: Add, Subtract, Multiply, Divide)
+- result (Float)
+- created_at (DateTime)
+- user_id (Integer, Foreign Key to users.id)
 
-### Users Table
-| Column | Type | Constraints |
-|--------|------|-------------|
-| id | Integer | Primary Key, Auto Increment |
-| username | String | Unique, Not Null, Indexed |
-| email | String | Unique, Not Null, Indexed |
-| hashed_password | String | Not Null |
-| created_at | DateTime | Default: UTC Now |
+Relationship: One User can have many Calculations.
 
-### Calculations Table
-| Column | Type | Constraints |
-|--------|------|-------------|
-| id | Integer | Primary Key, Auto Increment |
-| a | Float | Not Null |
-| b | Float | Not Null |
-| type | String | Not Null (Add, Subtract, Multiply, Divide) |
-| result | Float | Nullable |
-| created_at | DateTime | Default: UTC Now |
-| user_id | Integer | Foreign Key (users.id), Nullable |
+## Continuous Integration
 
-### Relationships
-- One-to-Many: User → Calculations
-- A user can have multiple calculations
-- A calculation can optionally belong to a user
+The repository includes a GitHub Actions workflow (.github/workflows/ci-cd.yml) that runs on every push:
 
-## 🔄 CI/CD Pipeline
+Test Job:
+- Set up Python 3.11
+- Start PostgreSQL 15 service container
+- Install dependencies with caching
+- Run unit tests (test_factory.py, test_schemas.py)
+- Run integration tests with PostgreSQL (test_integration.py)
+- Generate and upload coverage reports
 
-The GitHub Actions workflow automatically:
+Build and Push Job (main branch only):
+- Build Docker image
+- Tag with branch name, commit SHA, and latest
+- Push to Docker Hub (bhavanavuttunoori/calculation-api)
 
-1. **Test Stage**
-   - Sets up Python 3.11 environment
-   - Spins up PostgreSQL container
-   - Installs dependencies with caching
-   - Runs unit tests for factory and schemas
-   - Runs integration tests against PostgreSQL
-   - Generates coverage reports
-
-2. **Build and Push Stage** (on main branch)
-   - Builds Docker image
-   - Tags with branch name, commit SHA, and latest
-   - Pushes to Docker Hub
-   - Uses build cache for optimization
-
-3. **Security Scan Stage**
-   - Runs Trivy vulnerability scanner
-   - Uploads results to GitHub Security tab
+Security Scan Job:
+- Run Trivy vulnerability scanner
+- Upload results to GitHub Security tab
 
 ### Required GitHub Secrets
 
-Add these secrets to your repository settings:
+DOCKER_USERNAME: Your Docker Hub username
+DOCKER_PASSWORD: Your Docker Hub access token
 
-- `DOCKER_USERNAME`: Your Docker Hub username
-- `DOCKER_PASSWORD`: Your Docker Hub access token
+## Assignment Instructions & Deliverables
 
-### Viewing Pipeline Results
+Objective: Implement and test a Calculation Model with Factory Pattern, including SQLAlchemy models, Pydantic schemas, comprehensive tests, and CI/CD pipeline.
 
-1. Go to your repository on GitHub
-2. Click on the "Actions" tab
-3. Select the latest workflow run
-4. View detailed logs for each job
+### Implementation Checklist
 
-## 🐳 Docker Hub
+SQLAlchemy models for User and Calculation with proper relationships.
+Pydantic schemas with validation (division by zero, email format, password strength).
+Factory Pattern with extensible operation registry.
+100+ comprehensive tests covering unit and integration scenarios.
+FastAPI application with full CRUD operations.
+GitHub Actions workflow with PostgreSQL integration.
+Docker containerization with docker-compose support.
+Comprehensive documentation.
 
-### Pull the Image
+### Submission Package
 
-```bash
-docker pull bhavanav/assignment11:latest
-```
+GitHub repository: https://github.com/BhavanaVuttunoori/assignment11
+Docker Hub image: https://hub.docker.com/r/bhavanavuttunoori/calculation-api
+Screenshots demonstrating:
+- Successful GitHub Actions workflow
+- Docker Hub deployment
+- Test coverage report
+- API documentation (Swagger UI)
 
-### Run the Container
+### Grading Guidelines
 
-```bash
-docker run -d \
-  -p 8000:8000 \
-  -e DATABASE_URL=postgresql://user:password@host:5432/db \
-  -e SECRET_KEY=your-secret-key \
-  bhavanav/assignment11:latest
-```
+Criterion: SQLAlchemy Models
+- User and Calculation models with proper fields and relationships
+- Foreign key constraints and indexes
 
-### Docker Hub Repository
+Criterion: Pydantic Schemas
+- Input validation schemas (CalculationCreate, UserCreate)
+- Output serialization schemas (CalculationRead, UserRead)
+- Custom validators for business logic
 
-**Link**: https://hub.docker.com/r/bhavanav/assignment11
+Criterion: Factory Pattern
+- Abstract Operation base class
+- Concrete operation implementations
+- Factory with registry pattern
+- Extensibility demonstration
 
-## 📊 Learning Outcomes
+Criterion: Testing
+- 100+ unit and integration tests
+- Factory pattern tests
+- Schema validation tests
+- API endpoint tests with database
+- 90%+ code coverage
 
-This project demonstrates the following Course Learning Outcomes (CLOs):
+Criterion: CI/CD Pipeline
+- GitHub Actions workflow configuration
+- PostgreSQL service container integration
+- Docker build and push automation
+- Security scanning
 
-### CLO3: Create Python applications with automated testing
-- ✅ Comprehensive unit tests for factory pattern
-- ✅ Schema validation tests with Pydantic
-- ✅ Integration tests with database operations
-- ✅ Test fixtures and mocking
+Criterion: Documentation
+- Comprehensive README with setup instructions
+- API documentation via Swagger
+- Code comments and docstrings
+- Reflection document
 
-### CLO4: Set up GitHub Actions for CI
-- ✅ Automated testing on push and pull requests
-- ✅ PostgreSQL service containers
-- ✅ Automated Docker builds and deployment
-- ✅ Artifact uploads (coverage reports)
+## Helpful Commands
 
-### CLO9: Apply containerization techniques
-- ✅ Multi-stage Dockerfile
-- ✅ Docker Compose for local development
-- ✅ Environment variable management
-- ✅ Service orchestration with health checks
+| Task | Command |
+|------|---------|
+| Install dependencies | pip install -r requirements.txt |
+| Run application | uvicorn app.main:app --reload |
+| Run all tests | pytest tests/ -v |
+| Run tests with coverage | pytest tests/ --cov=app --cov-report=html |
+| Run unit tests only | pytest tests/test_factory.py tests/test_schemas.py -v |
+| Run integration tests only | pytest tests/test_integration.py -v |
+| Build Docker image | docker build -t calculation-api . |
+| Run with Docker Compose | docker-compose up -d |
+| Stop Docker Compose | docker-compose down |
+| View container logs | docker logs -f assignment11_app_1 |
+| Format code | black app/ tests/ |
+| Lint code | flake8 app/ tests/ |
 
-### CLO11: Integrate with SQL databases
-- ✅ SQLAlchemy ORM models
-- ✅ Foreign key relationships
-- ✅ Database migrations support (via Alembic)
-- ✅ Connection pooling and session management
+## Submission Tips
 
-### CLO12: Serialize/deserialize JSON with Pydantic
-- ✅ Input validation schemas (CalculationCreate, UserCreate)
-- ✅ Output serialization schemas (CalculationRead, UserRead)
-- ✅ Custom validators for business logic
-- ✅ Type safety with Python type hints
+Commit frequently with meaningful messages describing each feature.
+Keep .env or secrets out of version control (use .gitignore).
+Verify all tests pass locally before pushing.
+Ensure GitHub Actions workflow completes successfully.
+Capture required screenshots showing green checkmarks in Actions tab.
+Verify Docker image is publicly accessible on Docker Hub.
 
-### CLO13: Implement secure authentication
-- ✅ Password hashing with bcrypt
-- ✅ Secure password storage
-- ✅ Email validation with regex
-- ✅ User authentication foundation
+## Learning Outcomes
 
-## 🎯 Testing Strategy
+CLO3: Create Python applications with automated testing
+- Comprehensive unit tests for factory pattern and schemas
+- Integration tests with database operations
+- Test fixtures and mocking
+- 100+ tests with 90%+ coverage
 
-### Unit Tests (65 tests)
+CLO4: Set up GitHub Actions for CI
+- Automated testing on push and pull requests
+- PostgreSQL service containers
+- Automated Docker builds and deployment
+- Coverage report uploads
 
-**Factory Tests** (`test_factory.py`)
-- Individual operation classes (Add, Subtract, Multiply, Divide)
-- Factory creation and operation selection
-- Error handling (division by zero, invalid operations)
-- Custom operation registration
-- Edge cases (negative numbers, floats)
+CLO9: Apply containerization techniques
+- Multi-stage Dockerfile for optimization
+- Docker Compose for local development
+- Environment variable management
+- Service orchestration with health checks
 
-**Schema Tests** (`test_schemas.py`)
-- Pydantic validation rules
-- Division by zero validation
-- Email and password validation
-- Type enumeration
-- Optional fields
+CLO11: Integrate with SQL databases
+- SQLAlchemy ORM models with relationships
+- Foreign key constraints
+- Database session management
+- PostgreSQL in production, SQLite for testing
 
-### Integration Tests (35+ tests)
+CLO12: Serialize/deserialize JSON with Pydantic
+- Input validation schemas with custom validators
+- Output serialization with from_attributes
+- Type safety with Python type hints
+- Enum-based type validation
 
-**API Endpoint Tests** (`test_integration.py`)
-- CRUD operations for calculations
-- CRUD operations for users
-- User-calculation relationships
-- Error handling and validation
-- Database transactions
-- Query filtering
+CLO13: Implement secure authentication
+- Password hashing with bcrypt
+- Secure password storage
+- Email validation with regex patterns
+- User authentication foundation
 
-## 🛠️ Development
+## Author
 
-### Code Quality
+Bhavana Vuttunoori
+GitHub: https://github.com/BhavanaVuttunoori
+Repository: https://github.com/BhavanaVuttunoori/assignment11
 
-```bash
-# Format code with black
-black app/ tests/
+## Acknowledgments
 
-# Lint with flake8
-flake8 app/ tests/
+FastAPI documentation and community examples.
+SQLAlchemy ORM patterns and best practices.
+Pydantic validation framework.
+GitHub Actions workflow templates.
+Course instructors for project guidance.
 
-# Type checking with mypy
-mypy app/
-```
+## Support
 
-### Database Migrations
+For questions or issues:
+1. Check the GitHub Issues: https://github.com/BhavanaVuttunoori/assignment11/issues
+2. Review the API documentation at http://localhost:8000/docs
+3. Contact the repository maintainer
 
-```bash
-# Initialize Alembic (if not done)
-alembic init alembic
-
-# Create migration
-alembic revision --autogenerate -m "Description"
-
-# Apply migrations
-alembic upgrade head
-
-# Rollback
-alembic downgrade -1
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 👥 Author
-
-**Bhavana Vuttunoori**
-- GitHub: [@BhavanaVuttunoori](https://github.com/BhavanaVuttunoori)
-- Student ID: Module 11 Assignment
-
-## 🙏 Acknowledgments
-
-- FastAPI documentation
-- SQLAlchemy ORM guide
-- Pydantic validation documentation
-- GitHub Actions community
-- Course instructors and TAs
-
-## 📞 Support
-
-For questions or issues:
-1. Check the [GitHub Issues](https://github.com/BhavanaVuttunoori/assignment11/issues)
-2. Review the API documentation at `/docs`
-3. Contact the repository maintainer
-
 ---
 
-**Note**: This project was created as part of Module 11 assignment for demonstrating calculation model implementation with Factory Pattern, automated testing, and CI/CD pipelines.
+Note: This project was created as part of Module 11 assignment for demonstrating calculation model implementation with Factory Pattern, automated testing, comprehensive validation, and CI/CD pipelines.
