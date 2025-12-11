@@ -65,13 +65,6 @@ class CalculationUpdate(BaseModel):
     b: Optional[float] = None
     type: Optional[CalculationType] = None
 
-    @validator('type')
-    def validate_type(cls, v):
-        """Validate calculation type if provided"""
-        if v is not None and v not in [CalculationType.ADD, CalculationType.SUBTRACT, CalculationType.MULTIPLY, CalculationType.DIVIDE]:
-            raise ValueError(f'Invalid calculation type. Must be one of: {[t.value for t in CalculationType]}')
-        return v
-
     class Config:
         use_enum_values = True
 
