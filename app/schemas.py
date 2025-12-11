@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from typing import Optional
 from datetime import datetime
 from enum import Enum
@@ -17,19 +17,12 @@ class CalculationCreate(BaseModel):
     type: CalculationType = Field(..., description="Type of calculation: Add, Subtract, Multiply, or Divide")
     user_id: Optional[int] = Field(None, description="Optional user ID")
 
-    @validator('b')
-    def validate_divisor(cls, v, values):
+    @model_validator(mode='after')
+    def validate_division_by_zero(self):
         """Ensure divisor is not zero for division operations"""
-        if 'type' in values and values['type'] == CalculationType.DIVIDE and v == 0:
+        if self.type == CalculationType.DIVIDE and self.b == 0:
             raise ValueError('Division by zero is not allowed')
-        return v
-
-    @validator('type')
-    def validate_type(cls, v):
-        """Validate calculation type"""
-        if v not in [CalculationType.ADD, CalculationType.SUBTRACT, CalculationType.MULTIPLY, CalculationType.DIVIDE]:
-            raise ValueError(f'Invalid calculation type. Must be one of: {[t.value for t in CalculationType]}')
-        return v
+        return self
 
     class Config:
         use_enum_values = True
